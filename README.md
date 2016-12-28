@@ -4,12 +4,17 @@ Ansible playbook to spin a new instance, Docker file to setup ELK and Wordpress
 Clone the repo on a machine which has internet connectivity and ansible installed (recommended 2.2.0.0 - tested )
 
 Add aws details in details-aws.yml
----
+
 ACCESS_KEY: "XXXXXXXXXXXXXXXXXX"
+
 SECRET_KEY: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
 KEY_PAIR: "KEY-NAME"
+
 AMI_ID: "AMI_ID"
+
 SUBNET_ID: "SUBNET_ID"
+
 
 Use ansible playbook command to spin up an instance ( t2.large ) on your aws account region us-east-1.
 #ansible-playbook spinup-aws-instance.yml
