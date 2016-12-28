@@ -1,0 +1,2 @@
+[elk]
+52.91.114.128 ansible_ssh_private_key_file=kp-cepa.pem ansible_ssh_user=ubuntu ansible_become=true

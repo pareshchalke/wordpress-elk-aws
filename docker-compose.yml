@@ -1,0 +1,39 @@
+version: '2'
+
+services:
+   elk-cake:
+     build: .
+     image: elk-cake:latest
+     ports: 
+      - "8080:5601"
+      - "5044:5044"
+      - "5045:5045/udp"
+      - "9200:9200"
+
+   db:
+     image: mysql:5.7
+     volumes:
+       - db_data:/var/lib/mysql-docker
+     restart: always
+     environment:
+       MYSQL_ROOT_PASSWORD: wordpress
+       MYSQL_DATABASE: wordpress
+       MYSQL_USER: wordpress
+       MYSQL_PASSWORD: wordpress
+
+   wordpress:
+     depends_on:
+       - db
+     image: wordpress:latest
+     ports:
+       - "80:80"
+     restart: always
+     logging:
+       driver: gelf
+       options: 
+         gelf-address: "udp://localhost:5045"
+     environment:
+       WORDPRESS_DB_HOST: db:3306
+       WORDPRESS_DB_PASSWORD: wordpress
+volumes:
+    db_data:

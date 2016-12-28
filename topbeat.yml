@@ -1,0 +1,11 @@
+input:
+  period: 10
+  procs: [".*"]
+  stats:
+    system: true
+    process: true
+    filesystem: true
+    cpu_per_core: true
+output:
+  logstash:
+    hosts: ["localhost:5044"]

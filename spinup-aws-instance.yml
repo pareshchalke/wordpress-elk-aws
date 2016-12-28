@@ -1,0 +1,55 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+   - include_vars: 'details-aws.yml'
+
+   - name: get my public IP
+     ipify_facts: api_url=http://api.ipify.org
+
+   - ec2_group:
+      aws_access_key: "{{ ACCESS_KEY }}"
+      aws_secret_key: "{{ SECRET_KEY }}"
+      name: elk-wordpress-ssh
+      description: "security for demo purpose"
+      region: us-east-1
+      rules:
+       - proto: tcp
+         from_port: 22
+         to_port: 22
+         cidr_ip: "{{ ipify_public_ip + '/32' }}"
+       - proto: tcp
+         from_port: 80
+         to_port: 80
+         cidr_ip: 0.0.0.0/0
+       - proto: tcp
+         from_port: 8080
+         to_port: 8080
+         cidr_ip: "{{ ipify_public_ip + '/32' }}"
+      rules_egress:
+       - proto: all
+         cidr_ip: 0.0.0.0/0
+
+   - ec2:
+      aws_access_key: "{{ ACCESS_KEY }}"
+      aws_secret_key: "{{ SECRET_KEY }}"
+      key_name: "{{ KEY_PAIR }}"
+      instance_type: "t2.large"
+      image: "{{ AMI_ID }}"
+      group: "elk-wordpress-ssh"
+      wait: yes
+      count: 1
+      vpc_subnet_id: "{{ SUBNET_ID }}"
+      assign_public_ip: yes
+      region: us-east-1
+     register: ec2
+   - file: path=new-host state=absent
+   - file: path=new-host state=touch
+   - lineinfile: dest=new-host line="[elk]"
+   - lineinfile: 
+      dest: new-host 
+      insertafter: "[elk]" 
+      line: "{{ item.public_ip + ' ansible_ssh_private_key_file=' + KEY_PAIR + '.pem ansible_ssh_user=ubuntu ansible_become=true' }}"
+     with_items: "{{ ec2.instances }}"
+   - wait_for: host={{ item.public_ip }} port=22 state=started
+     with_items: "{{ ec2.instances }}"
